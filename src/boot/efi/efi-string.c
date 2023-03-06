@@ -456,7 +456,7 @@ typedef struct {
         bool have_field_width;
 
         const char *str;
-        const wchar_t *wstr;
+        const char16_t *wstr;
 
         /* For numbers. */
         bool is_signed;
@@ -596,7 +596,6 @@ static bool push_num(FormatContext *ctx, SpecifierContext *sp, uint64_t u) {
 /* This helps unit testing. */
 #if SD_BOOT
 #  define NULLSTR "(null)"
-#  define wcsnlen strnlen16
 #else
 #  define NULLSTR "(nil)"
 #endif
@@ -704,14 +703,14 @@ static bool handle_format_specifier(FormatContext *ctx, SpecifierContext *sp) {
                 return push_str(ctx, sp);
 
         case 'c':
-                sp->wstr = &(wchar_t){ va_arg(ctx->ap, int) };
+                sp->wstr = &(char16_t){ va_arg(ctx->ap, int) };
                 sp->len = 1;
                 return push_str(ctx, sp);
 
         case 's':
                 if (sp->long_arg) {
-                        sp->wstr = va_arg(ctx->ap, const wchar_t *) ?: L"(null)";
-                        sp->len = wcsnlen(sp->wstr, sp->len);
+                        sp->wstr = va_arg(ctx->ap, const char16_t *) ?: L"(null)";
+                        sp->len = strnlen16(sp->wstr, sp->len);
                 } else {
                         sp->str = va_arg(ctx->ap, const char *) ?: "(null)";
                         sp->len = strnlen8(sp->str, sp->len);
